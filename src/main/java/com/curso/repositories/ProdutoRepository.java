@@ -14,5 +14,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     Page<Produto> findByGrupoProduto_Id(Integer grupoId, Pageable pageable);
 
     Optional<Produto> findByCodigoBarra(String codigoBarra);
+
+    boolean existsByGrupoProduto_Id(Integer grupoId);
 }
 

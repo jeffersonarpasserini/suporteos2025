@@ -115,4 +115,5 @@ public class ProdutoService {
                 .orElseThrow(() ->
                         new ObjectNotFoundException("Produto não encontrado: Codigo de Barra=" + normalizedCodigoBarra));
     }
+
 }

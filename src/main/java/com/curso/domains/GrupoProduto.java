@@ -75,6 +75,10 @@ public class GrupoProduto {
 
     public void setProdutos(List<Produto> produtos) { this.produtos = produtos; }
 
+    public List<Produto> getProdutos() {
+        return produtos;
+    }
+
     public void addProduto(Produto p) {
         if (p == null) return;
         produtos.add(p);
