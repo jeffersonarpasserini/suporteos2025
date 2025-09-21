@@ -41,4 +41,6 @@ public class GrupoProdutoResource {
         GrupoProdutoDTO dto = service.findById(id);
         return ResponseEntity.ok(dto);
     }
+
+    
 }
