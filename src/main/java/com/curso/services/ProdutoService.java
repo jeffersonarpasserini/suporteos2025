@@ -89,4 +89,30 @@ public class ProdutoService {
     public List<ProdutoDTO> findAllByGrupo(Integer grupoId) {
         return findAllByGrupo(grupoId, Pageable.unpaged()).getContent();
     }
+
+    @Transactional(readOnly = true)
+    public ProdutoDTO findById(Long id) {
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id de Produto é obrigatório");
+        }
+
+        return produtoRepo.findById(id)
+                .map(ProdutoMapper::toDto)
+                .orElseThrow(() ->
+                        new ObjectNotFoundException("Produto não encontrado: id=" + id));
+    }
+
+    @Transactional(readOnly = true)
+    public ProdutoDTO findByCodigoBarra(String codigoBarra) {
+        if (codigoBarra == null || codigoBarra.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Código de Barra do Produto é obrigatório");
+        }
+
+        String normalizedCodigoBarra = codigoBarra.trim();
+
+        return produtoRepo.findByCodigoBarra(normalizedCodigoBarra)
+                .map(ProdutoMapper::toDto)
+                .orElseThrow(() ->
+                        new ObjectNotFoundException("Produto não encontrado: Codigo de Barra=" + normalizedCodigoBarra));
+    }
 }

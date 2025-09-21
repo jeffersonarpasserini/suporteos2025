@@ -35,4 +35,10 @@ public class GrupoProdutoResource {
         Page<GrupoProdutoDTO> page = new PageImpl<>(all, pageable, all.size());
         return ResponseEntity.ok(page);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<GrupoProdutoDTO> findById(@PathVariable Integer id) {
+        GrupoProdutoDTO dto = service.findById(id);
+        return ResponseEntity.ok(dto);
+    }
 }

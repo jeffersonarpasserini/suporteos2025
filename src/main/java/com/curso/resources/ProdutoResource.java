@@ -1,5 +1,6 @@
 package com.curso.resources;
 
+import com.curso.domains.dtos.GrupoProdutoDTO;
 import com.curso.domains.dtos.ProdutoDTO;
 import com.curso.services.ProdutoService;
 import org.springframework.data.domain.Page;
@@ -43,5 +44,17 @@ public class ProdutoResource {
                 : service.findAll();              // não paginado sem filtro
 
         return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProdutoDTO> findById(@PathVariable Long id) {
+        ProdutoDTO dto = service.findById(id);
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/codigobarra/{codigobarra}")
+    public ResponseEntity<ProdutoDTO> findByCodigoBarra(@PathVariable String codigobarra) {
+        ProdutoDTO dto = service.findByCodigoBarra(codigobarra);
+        return ResponseEntity.ok(dto);
     }
 }
