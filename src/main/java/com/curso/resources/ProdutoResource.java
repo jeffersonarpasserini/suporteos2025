@@ -1,16 +1,19 @@
 package com.curso.resources;
 
-import com.curso.domains.dtos.GrupoProdutoDTO;
 import com.curso.domains.dtos.ProdutoDTO;
 import com.curso.services.ProdutoService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/produto")
 public class ProdutoResource {
@@ -57,4 +60,27 @@ public class ProdutoResource {
         ProdutoDTO dto = service.findByCodigoBarra(codigobarra);
         return ResponseEntity.ok(dto);
     }
+
+    @PostMapping
+    public ResponseEntity<ProdutoDTO> create(
+            @RequestBody @Validated(ProdutoDTO.Create.class) ProdutoDTO dto) {
+
+        ProdutoDTO created = service.create(dto);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getIdProduto())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
+    }
+
+    @PostMapping
+    public ResponseEntity<ProdutoDTO> update(Long id,
+            @RequestBody @Validated(ProdutoDTO.Update.class) ProdutoDTO dto) {
+        dto.setIdProduto(id);
+        return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    
+
+
 }

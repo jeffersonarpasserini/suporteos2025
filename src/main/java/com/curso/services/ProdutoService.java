@@ -148,4 +148,32 @@ public class ProdutoService {
         return ProdutoMapper.toDto(produtoRepo.save(produto));
     }
 
+    @Transactional
+    public ProdutoDTO update(Long id, ProdutoDTO produtoDTO) {
+
+
+        if (produtoDTO == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados do produto são obrigatórios");
+        }
+
+        if (produtoDTO.getGrupoProdutoId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id do grupo de produto é obrigatório");
+        }
+
+        GrupoProduto grupoProduto = grupoProdutoRepo.findById(produtoDTO.getGrupoProdutoId())
+                .orElseThrow(() ->
+                        new ObjectNotFoundException("Grupo de Produto não encontrado: id=" + produtoDTO.getGrupoProdutoId())
+                );
+
+        produtoDTO.setIdProduto(id);
+        Produto produto;
+        try{
+            produto = ProdutoMapper.toEntity(produtoDTO,grupoProduto);
+        } catch (IllegalArgumentException ex){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
+
+        return ProdutoMapper.toDto(produtoRepo.save(produto));
+    }
+
 }
