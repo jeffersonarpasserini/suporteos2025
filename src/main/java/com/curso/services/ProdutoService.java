@@ -127,15 +127,15 @@ public class ProdutoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados do produto são obrigatórios");
         }
 
-        GrupoProdutoDTO grupoProdutoDTO = GrupoProdutoMapper.toDto(grupoProdutoRepo.findById(produtoDTO.getGrupoProdutoId())
+        GrupoProduto grupoProduto = grupoProdutoRepo.findById(produtoDTO.getGrupoProdutoId())
                 .orElseThrow(() ->
                         new ObjectNotFoundException("Grupo de Produto não encontrado: id=" + produtoDTO.getGrupoProdutoId())
-                ));
+                );
 
         produtoDTO.setIdProduto(null);
         Produto produto;
         try{
-            produto = ProdutoMapper.toEntity(produtoDTO, grupoProdutoDTO);
+            produto = ProdutoMapper.toEntity(produtoDTO,grupoProduto);
         } catch (IllegalArgumentException ex){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
