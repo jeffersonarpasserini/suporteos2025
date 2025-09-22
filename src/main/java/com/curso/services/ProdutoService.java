@@ -1,7 +1,10 @@
 package com.curso.services;
 
+import com.curso.domains.GrupoProduto;
 import com.curso.domains.Produto;
+import com.curso.domains.dtos.GrupoProdutoDTO;
 import com.curso.domains.dtos.ProdutoDTO;
+import com.curso.mappers.GrupoProdutoMapper;
 import com.curso.mappers.ProdutoMapper;
 import com.curso.repositories.GrupoProdutoRepository;
 import com.curso.repositories.ProdutoRepository;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProdutoService {
@@ -114,6 +118,29 @@ public class ProdutoService {
                 .map(ProdutoMapper::toDto)
                 .orElseThrow(() ->
                         new ObjectNotFoundException("Produto não encontrado: Codigo de Barra=" + normalizedCodigoBarra));
+    }
+
+    @Transactional
+    public ProdutoDTO create(ProdutoDTO produtoDTO) {
+
+        if (produtoDTO == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados do produto são obrigatórios");
+        }
+
+        GrupoProdutoDTO grupoProdutoDTO = GrupoProdutoMapper.toDto(grupoProdutoRepo.findById(produtoDTO.getGrupoProdutoId())
+                .orElseThrow(() ->
+                        new ObjectNotFoundException("Grupo de Produto não encontrado: id=" + produtoDTO.getGrupoProdutoId())
+                ));
+
+        produtoDTO.setIdProduto(null);
+        Produto produto;
+        try{
+            produto = ProdutoMapper.toEntity(produtoDTO, grupoProdutoDTO);
+        } catch (IllegalArgumentException ex){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
+
+        return ProdutoMapper.toDto(produtoRepo.save(produto));
     }
 
 }

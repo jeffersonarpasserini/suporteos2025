@@ -1,16 +1,22 @@
 package com.curso.resources;
 
+import com.curso.domains.GrupoProduto;
 import com.curso.domains.dtos.GrupoProdutoDTO;
+import com.curso.mappers.GrupoProdutoMapper;
 import com.curso.services.GrupoProdutoService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/grupoproduto")
 public class GrupoProdutoResource {
@@ -42,5 +48,27 @@ public class GrupoProdutoResource {
         return ResponseEntity.ok(dto);
     }
 
-    
+    @PostMapping
+    public ResponseEntity<GrupoProdutoDTO> create(@RequestBody @Validated(GrupoProdutoDTO.Create.class) GrupoProdutoDTO dto) {
+        GrupoProdutoDTO created = service.create(dto);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<GrupoProdutoDTO> update(
+            @PathVariable Integer id,
+            @RequestBody @Validated(GrupoProdutoDTO.Update.class) GrupoProdutoDTO dto) {
+        dto.setId(id);
+        return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
