@@ -136,6 +136,7 @@ class ProdutoServiceTest {
         ProdutoDTO dto = buildDto(id, grupoId);
         Produto saved = buildProduto(id, grupo);
         when(grupoProdutoRepository.findById(grupoId)).thenReturn(Optional.of(grupo));
+        when(produtoRepository.findById(id)).thenReturn(Optional.of(saved));
         when(produtoRepository.save(any(Produto.class))).thenReturn(saved);
 
         ProdutoDTO result = service.update(id, dto);
