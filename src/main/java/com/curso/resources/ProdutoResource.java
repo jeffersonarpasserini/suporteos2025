@@ -73,14 +73,14 @@ public class ProdutoResource {
         return ResponseEntity.created(location).body(created);
     }
 
-    @PostMapping
+    @PutMapping("/{id}")
     public ResponseEntity<ProdutoDTO> update(Long id,
             @RequestBody @Validated(ProdutoDTO.Update.class) ProdutoDTO dto) {
         dto.setIdProduto(id);
         return ResponseEntity.ok(service.update(id, dto));
     }
 
-    
+
 
 
 }
