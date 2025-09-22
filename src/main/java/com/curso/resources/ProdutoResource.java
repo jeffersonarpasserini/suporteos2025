@@ -85,5 +85,5 @@ public class ProdutoResource {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
-    
+
 }
