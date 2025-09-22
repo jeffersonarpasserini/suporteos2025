@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GrupoProdutoServiceTest {
+class GrupoProdutoServiceUnitTest {
 
     @Test
     void defaultConstructorShouldStartWithActiveStatusAndEmptyList() {
