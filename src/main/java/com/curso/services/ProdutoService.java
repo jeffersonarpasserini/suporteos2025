@@ -164,10 +164,13 @@ public class ProdutoService {
         GrupoProduto grupoProduto = grupoProdutoRepo.findById(produtoDTO.getGrupoProdutoId())
                 .orElseThrow(() ->
                         new ObjectNotFoundException("Grupo de Produto não encontrado: id=" + produtoDTO.getGrupoProdutoId())
-                );
+               );
+
+        Produto produto = produtoRepo.findById(id)
+                .orElseThrow(() ->
+                        new ObjectNotFoundException("Produto não encontrado: id=" + id));
 
         produtoDTO.setIdProduto(id);
-        Produto produto;
         try{
             produto = ProdutoMapper.toEntity(produtoDTO,grupoProduto);
         } catch (IllegalArgumentException ex){
