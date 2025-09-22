@@ -9,6 +9,7 @@ import com.curso.mappers.ProdutoMapper;
 import com.curso.repositories.GrupoProdutoRepository;
 import com.curso.repositories.ProdutoRepository;
 import com.curso.services.exceptions.ObjectNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -174,6 +175,19 @@ public class ProdutoService {
         }
 
         return ProdutoMapper.toDto(produtoRepo.save(produto));
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id é obrigatório");
+        }
+
+        Produto produto = produtoRepo.findById(id)
+                .orElseThrow(() ->
+                        new ObjectNotFoundException("Produto não encontrado: id=" + id));
+
+        produtoRepo.delete(produto);
     }
 
 }

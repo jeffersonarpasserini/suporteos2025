@@ -74,13 +74,16 @@ public class ProdutoResource {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProdutoDTO> update(Long id,
+    public ResponseEntity<ProdutoDTO> update(@PathVariable Long id,
             @RequestBody @Validated(ProdutoDTO.Update.class) ProdutoDTO dto) {
         dto.setIdProduto(id);
         return ResponseEntity.ok(service.update(id, dto));
     }
 
-
-
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+    
 }
