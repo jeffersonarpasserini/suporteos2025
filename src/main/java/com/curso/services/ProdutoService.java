@@ -123,8 +123,13 @@ public class ProdutoService {
     @Transactional
     public ProdutoDTO create(ProdutoDTO produtoDTO) {
 
+
         if (produtoDTO == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados do produto são obrigatórios");
+        }
+
+        if (produtoDTO.getGrupoProdutoId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id do grupo de produto é obrigatório");
         }
 
         GrupoProduto grupoProduto = grupoProdutoRepo.findById(produtoDTO.getGrupoProdutoId())
