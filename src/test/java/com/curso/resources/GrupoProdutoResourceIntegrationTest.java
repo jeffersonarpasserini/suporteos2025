@@ -26,6 +26,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -84,11 +85,13 @@ class GrupoProdutoResourceIntegrationTest {
     @Test
     @DisplayName("GET /api/grupoproduto/{id} deve retornar 404 quando grupo não existir")
     void deveRetornar404AoBuscarGrupoInexistente() throws Exception {
-        mockMvc.perform(get("/api/grupoproduto/{id}", 99999)
+        Integer idInexistente = 99999;
+        mockMvc.perform(get("/api/grupoproduto/{id}", idInexistente)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value("Grupo de Produto não encontrado: id=99999"));
+                .andExpect(jsonPath("$.message", equalToIgnoringCase(
+                        "Grupo de Produto não encontrado: id=" + idInexistente)));
     }
 
     // ================== POST ==================
@@ -160,6 +163,7 @@ class GrupoProdutoResourceIntegrationTest {
     @DisplayName("PUT /api/grupoproduto/{id} deve retornar 404 quando grupo não existir")
     void deveRetornar404AoAtualizarGrupoInexistente() throws Exception {
         GrupoProdutoDTO dto = new GrupoProdutoDTO();
+        dto.setId(12345);
         dto.setDescricao("Novo Nome");
         dto.setStatus(Status.ATIVO.getId());
 

@@ -94,12 +94,12 @@ class ProdutoDomainUnitTest {
         invocarRecalcValorEstoque(p);
         assertEquals(new BigDecimal("1.01"), p.getValorEstoque());
 
-        // outro exemplo: 2.335 * 3.333 = 7.774... → 7.77 (HALF_UP em 2 casas)
+        // outro exemplo: 2.335 * 3.333 = 7.774... → 7.78 (HALF_UP em 2 casas)
         Produto q = new Produto();
         q.setSaldoEstoque(new BigDecimal("2.335"));
         q.setValorUnitario(new BigDecimal("3.333"));
         invocarRecalcValorEstoque(q);
-        assertEquals(new BigDecimal("7.77"), q.getValorEstoque());
+        assertEquals(new BigDecimal("7.78"), q.getValorEstoque());
     }
 
     @Test
