@@ -70,7 +70,7 @@ public class ProdutoService {
 
         // valida existência do grupo para erro claro
         if (!grupoProdutoRepo.existsById(grupoId)) {
-            throw new ObjectNotFoundException("Grupo do produto não encontrado: id=" + grupoId);
+            throw new ObjectNotFoundException("Grupo de Produto não encontrado: id=" + grupoId);
         }
 
         // ✅ trate unpaged aqui
@@ -118,7 +118,7 @@ public class ProdutoService {
         return produtoRepo.findByCodigoBarra(normalizedCodigoBarra)
                 .map(ProdutoMapper::toDto)
                 .orElseThrow(() ->
-                        new ObjectNotFoundException("Produto não encontrado: Codigo de Barra=" + normalizedCodigoBarra));
+                        new ObjectNotFoundException("Produto não encontrado: codigoBarra=" + normalizedCodigoBarra));
     }
 
     @Transactional

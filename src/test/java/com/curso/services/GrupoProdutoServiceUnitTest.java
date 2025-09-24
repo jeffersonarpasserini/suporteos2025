@@ -17,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,6 +42,34 @@ class GrupoProdutoServiceUnitTest {
     void setUp() {
         // Ajuste este construtor se seu service tiver assinatura diferente
         service = new GrupoProdutoService(grupoProdutoRepository, produtoRepository);
+    }
+
+    @Test
+    @DisplayName("findAll deve retornar lista de DTOs mapeada do repositório")
+    void deveListarTodosOsGrupos() {
+        GrupoProduto g1 = new GrupoProduto();
+        g1.setId(1);
+        g1.setDescricao("Bebidas");
+        g1.setStatus(Status.ATIVO);
+
+        GrupoProduto g2 = new GrupoProduto();
+        g2.setId(2);
+        g2.setDescricao("Higiene");
+        g2.setStatus(Status.INATIVO);
+
+        when(grupoProdutoRepository.findAll()).thenReturn(List.of(g1, g2));
+
+        List<GrupoProdutoDTO> result = service.findAll();
+
+        assertAll(
+                () -> assertEquals(2, result.size()),
+                () -> assertEquals(g1.getId(), result.get(0).getId()),
+                () -> assertEquals(g1.getDescricao(), result.get(0).getDescricao()),
+                () -> assertEquals(g1.getStatus().getId(), result.get(0).getStatus()),
+                () -> assertEquals(g2.getId(), result.get(1).getId()),
+                () -> assertEquals(g2.getDescricao(), result.get(1).getDescricao()),
+                () -> assertEquals(g2.getStatus().getId(), result.get(1).getStatus())
+        );
     }
 
     // =======================

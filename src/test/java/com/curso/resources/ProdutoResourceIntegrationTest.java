@@ -109,6 +109,63 @@ class ProdutoResourceIntegrationTest {
     }
 
     @Test
+    @DisplayName("GET /api/produto com grupoId deve retornar somente produtos do grupo informado")
+    void deveListarProdutosFiltradosPorGrupoComPaginacao() throws Exception {
+        GrupoProduto perifericos = new GrupoProduto();
+        perifericos.setDescricao("Periféricos");
+        perifericos.setStatus(Status.ATIVO);
+        perifericos = grupoProdutoRepository.save(perifericos);
+
+        Produto teclado = new Produto();
+        teclado.setDescricao("Teclado Mecânico");
+        teclado.setCodigoBarra("3216549870123");
+        teclado.setGrupoProduto(perifericos);
+        teclado.setStatus(Status.ATIVO);
+        teclado.setSaldoEstoque(new BigDecimal("4.000"));
+        teclado.setValorUnitario(new BigDecimal("299.90"));
+        Produto produtoTeclado = produtoRepository.save(teclado);
+
+        mockMvc.perform(get("/api/produto")
+                        .param("grupoId", perifericos.getId().toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].idProduto").value(produtoTeclado.getIdProduto()))
+                .andExpect(jsonPath("$.content[0].descricao").value("Teclado Mecânico"))
+                .andExpect(jsonPath("$.content[0].codigoBarra").value("3216549870123"))
+                .andExpect(jsonPath("$.content[0].grupoProdutoId").value(perifericos.getId()))
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    @DisplayName("GET /api/produto/all com grupoId deve retornar lista filtrada pelo grupo")
+    void deveListarProdutosFiltradosPorGrupoSemPaginacao() throws Exception {
+        GrupoProduto acessorios = new GrupoProduto();
+        acessorios.setDescricao("Acessórios");
+        acessorios.setStatus(Status.ATIVO);
+        acessorios = grupoProdutoRepository.save(acessorios);
+
+        Produto mouse = new Produto();
+        mouse.setDescricao("Mouse Sem Fio");
+        mouse.setCodigoBarra("6549873210123");
+        mouse.setGrupoProduto(acessorios);
+        mouse.setStatus(Status.ATIVO);
+        mouse.setSaldoEstoque(new BigDecimal("6.000"));
+        mouse.setValorUnitario(new BigDecimal("149.90"));
+        Produto produtoMouse = produtoRepository.save(mouse);
+
+        mockMvc.perform(get("/api/produto/all")
+                        .param("grupoId", acessorios.getId().toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].idProduto").value(produtoMouse.getIdProduto()))
+                .andExpect(jsonPath("$[0].descricao").value("Mouse Sem Fio"))
+                .andExpect(jsonPath("$[0].codigoBarra").value("6549873210123"))
+                .andExpect(jsonPath("$[0].grupoProdutoId").value(acessorios.getId()));
+    }
+
+    @Test
     @DisplayName("GET /api/produto/{id} deve retornar o produto correspondente")
     void deveBuscarProdutoPorId() throws Exception {
         mockMvc.perform(get("/api/produto/{id}", produtoCaboHdmi.getIdProduto())
