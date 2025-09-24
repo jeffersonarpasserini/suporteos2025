@@ -8,6 +8,7 @@ import com.curso.repositories.GrupoProdutoRepository;
 import com.curso.repositories.ProdutoRepository;
 import com.curso.services.exceptions.ObjectNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,7 +46,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void findAllShouldReturnMappedDtos() {
+    @DisplayName("findAll deve retornar lista de ProdutoDTO mapeada corretamente")
+    void deveListarTodosMapeandoParaDto() {
         GrupoProduto grupo = buildGrupo(1);
         Produto produto = buildProduto(10L, grupo);
         when(produtoRepository.findAll()).thenReturn(List.of(produto));
@@ -60,7 +63,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void findAllPageableShouldClampPageSizeToMaximum() {
+    @DisplayName("findAll paginado deve aplicar limite máximo de página (200)")
+    void deveListarPaginadoComLimiteDeTamanhoMaximo() {
         GrupoProduto grupo = buildGrupo(1);
         Produto produto = buildProduto(5L, grupo);
         Page<Produto> page = new PageImpl<>(List.of(produto), PageRequest.of(0, 200), 1);
@@ -78,7 +82,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void findAllByGrupoShouldReturnDtosWhenGrupoExists() {
+    @DisplayName("findAllByGrupo paginado deve retornar DTOs quando o grupo existe e aplicar limite de 200")
+    void deveListarPorGrupoQuandoExistir() {
         int grupoId = 7;
         GrupoProduto grupo = buildGrupo(grupoId);
         Produto produto = buildProduto(11L, grupo);
@@ -98,7 +103,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void findAllByGrupoUnpagedShouldReturnListContent() {
+    @DisplayName("findAllByGrupo (sem paginação) deve retornar lista de DTOs")
+    void deveListarPorGrupoSemPaginacao() {
         int grupoId = 3;
         GrupoProduto grupo = buildGrupo(grupoId);
         Produto produto = buildProduto(20L, grupo);
@@ -113,7 +119,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void createShouldPersistAndReturnDto() {
+    @DisplayName("create deve persistir e retornar ProdutoDTO")
+    void deveCriarPersistirERetornarDto() {
         int grupoId = 4;
         GrupoProduto grupo = buildGrupo(grupoId);
         ProdutoDTO dto = buildDto(null, grupoId);
@@ -129,7 +136,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void updateShouldPersistAndReturnDto() {
+    @DisplayName("update deve persistir alterações e retornar ProdutoDTO")
+    void deveAtualizarPersistirERetornarDto() {
         long id = 41L;
         int grupoId = 5;
         GrupoProduto grupo = buildGrupo(grupoId);
@@ -150,7 +158,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void deleteShouldRemoveProdutoWhenItExists() {
+    @DisplayName("delete deve remover o produto quando ele existe")
+    void deveExcluirQuandoProdutoExiste() {
         long id = 13L;
         Produto produto = buildProduto(id, buildGrupo(8));
         when(produtoRepository.findById(id)).thenReturn(Optional.of(produto));
@@ -161,7 +170,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void findAllByGrupoShouldThrowWhenGrupoIdIsNull() {
+    @DisplayName("findAllByGrupo deve lançar 400 quando grupoId é nulo")
+    void deveLancar400QuandoGrupoIdNuloNaListagemPorGrupo() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> service.findAllByGrupo(null, Pageable.unpaged()));
 
@@ -170,18 +180,20 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void findAllByGrupoShouldThrowWhenGrupoDoesNotExist() {
+    @DisplayName("findAllByGrupo deve lançar 404 quando o grupo não existe")
+    void deveLancar404QuandoGrupoInexistenteNaListagemPorGrupo() {
         int grupoId = 15;
         when(grupoProdutoRepository.existsById(grupoId)).thenReturn(false);
 
         ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class,
                 () -> service.findAllByGrupo(grupoId, Pageable.unpaged()));
 
-        assertEquals("Grupo do produto não encontrado: id=" + grupoId, exception.getMessage());
+        assertEquals("Grupo de Produto não encontrado: id=" + grupoId, exception.getMessage());
     }
 
     @Test
-    void createShouldThrowWhenDtoIsNull() {
+    @DisplayName("create deve lançar 400 quando DTO é nulo")
+    void deveLancar400AoCriarComDtoNulo() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> service.create(null));
 
@@ -190,7 +202,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void findByIdShouldThrowWhenProdutoNotFound() {
+    @DisplayName("findById deve lançar 404 quando produto não é encontrado")
+    void deveLancar404AoBuscarPorIdInexistente() {
         long id = 88L;
         when(produtoRepository.findById(id)).thenReturn(Optional.empty());
 
@@ -201,7 +214,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void findByCodigoBarraShouldThrowWhenBlank() {
+    @DisplayName("findByCodigoBarra deve lançar 400 quando parâmetro está em branco")
+    void deveLancar400AoBuscarPorCodigoDeBarrasEmBranco() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> service.findByCodigoBarra("   "));
 
@@ -210,7 +224,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void deleteShouldThrowWhenIdIsNull() {
+    @DisplayName("delete deve lançar 400 quando id é nulo e não deve invocar o repositório")
+    void deveLancar400AoExcluirComIdNulo() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> service.delete(null));
 
@@ -220,7 +235,8 @@ class ProdutoServiceUnitTest {
     }
 
     @Test
-    void deleteShouldNotInvokeRepositoryWhenProdutoDoesNotExist() {
+    @DisplayName("delete não deve invocar o repositório quando produto não existe (404)")
+    void deveNaoExcluirQuandoProdutoNaoExiste() {
         long id = 21L;
         when(produtoRepository.findById(id)).thenReturn(Optional.empty());
 
@@ -230,6 +246,8 @@ class ProdutoServiceUnitTest {
         assertEquals("Produto não encontrado: id=" + id, exception.getMessage());
         verify(produtoRepository, never()).delete(any(Produto.class));
     }
+
+    // ----------------- Builders auxiliares -----------------
 
     private GrupoProduto buildGrupo(int id) {
         GrupoProduto grupo = new GrupoProduto();

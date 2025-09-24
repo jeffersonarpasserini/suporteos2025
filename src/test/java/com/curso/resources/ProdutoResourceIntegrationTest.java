@@ -91,7 +91,7 @@ class ProdutoResourceIntegrationTest {
 
     @Test
     @DisplayName("GET /api/produto deve retornar paginação com produtos cadastrados")
-    void shouldListProductsWithPagination() throws Exception {
+    void deveListarProdutosComPaginacao() throws Exception {
         mockMvc.perform(get("/api/produto")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -110,7 +110,7 @@ class ProdutoResourceIntegrationTest {
 
     @Test
     @DisplayName("GET /api/produto/{id} deve retornar o produto correspondente")
-    void shouldRetrieveProductById() throws Exception {
+    void deveBuscarProdutoPorId() throws Exception {
         mockMvc.perform(get("/api/produto/{id}", produtoCaboHdmi.getIdProduto())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -125,7 +125,7 @@ class ProdutoResourceIntegrationTest {
 
     @Test
     @DisplayName("GET /api/produto/codigobarra/{codigo} deve localizar produto pelo código de barras")
-    void shouldRetrieveProductByCodigoBarra() throws Exception {
+    void deveBuscarProdutoPorCodigoDeBarra() throws Exception {
         mockMvc.perform(get("/api/produto/codigobarra/{codigo}", produtoNotebook.getCodigoBarra())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -139,39 +139,65 @@ class ProdutoResourceIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /api/produto deve cadastrar novo produto e retornar Location")
-    void shouldCreateProduct() throws Exception {
-        var payload = objectMapper.createObjectNode();
-        payload.put("descricao", "Mouse Gamer");
-        payload.put("codigoBarra", "9998887776661");
-        payload.put("grupoProdutoId", grupoProduto.getId());
-        payload.put("status", Status.ATIVO.getId());
-        payload.put("valorUnitario", 250.00);
-        payload.put("saldoEstoque", 3.0);
-
-        MvcResult result = mockMvc.perform(post("/api/produto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(payload)))
-                .andExpect(status().isCreated())
-                .andExpect(header().string(HttpHeaders.LOCATION, containsString("/api/produto/")))
-                .andReturn();
-
-        JsonNode body = objectMapper.readTree(result.getResponse().getContentAsByteArray());
-        Long createdId = body.path("idProduto").asLong();
-
-        assertThat(createdId).isNotNull();
-        assertThat(result.getResponse().getHeader(HttpHeaders.LOCATION))
-                .isEqualTo("http://localhost/api/produto/" + createdId);
-
-        Optional<Produto> saved = produtoRepository.findById(createdId);
-        assertThat(saved).isPresent();
-        assertThat(saved.get().getDescricao()).isEqualTo("Mouse Gamer");
-        assertThat(saved.get().getGrupoProduto().getId()).isEqualTo(grupoProduto.getId());
+    @DisplayName("GET /api/produto/codigobarra/{codigo} deve retornar 404 quando produto não for encontrado pelo código de barras")
+    void deveRetornar404AoBuscarProdutoPorCodigoDeBarrasInexistente() throws Exception {
+        mockMvc.perform(get("/api/produto/codigobarra/{codigo}", "0000000000000"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Produto não encontrado: codigoBarra=0000000000000"));
     }
 
     @Test
+    @DisplayName("POST /api/produto deve criar, retornar Location exato, persistir no banco e permitir consulta por ID")
+    void deveCriarProdutoPersistirERetornarDto() throws Exception {
+        // Monta o payload (DTO) do produto a ser criado
+        ProdutoDTO payload = new ProdutoDTO();
+        payload.setDescricao("Água Mineral");
+        payload.setCodigoBarra("7891000100001");
+        payload.setGrupoProdutoId(grupoProduto.getId());
+        payload.setStatus(Status.ATIVO.getId());
+        payload.setValorUnitario(new BigDecimal("5.25"));
+        payload.setSaldoEstoque(new BigDecimal("10.000"));
+        payload.setValorEstoque(new BigDecimal("52.50"));
+
+        // Serializa para JSON
+        String body = objectMapper.writeValueAsString(payload);
+
+        // Executa o POST e valida: 201, Location contendo o path, e campos básicos do JSON
+        MvcResult result = mockMvc.perform(post("/api/produto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(header().string(HttpHeaders.LOCATION, containsString("/api/produto/")))
+                .andExpect(jsonPath("$.idProduto").isNumber())
+                .andExpect(jsonPath("$.descricao").value("Água Mineral"))
+                .andReturn();
+
+        // Lê o corpo da resposta como DTO para obter o id gerado
+        ProdutoDTO created = objectMapper.readValue(result.getResponse().getContentAsByteArray(), ProdutoDTO.class);
+        Long createdId = created.getIdProduto();
+
+        // Verifica o Location EXATO após conhecer o id
+        assertThat(result.getResponse().getHeader(HttpHeaders.LOCATION))
+                .isEqualTo("http://localhost/api/produto/" + createdId);
+
+        // Garante que persistiu no repositório e com os dados esperados
+        Optional<Produto> saved = produtoRepository.findById(createdId);
+        assertThat(saved).isPresent();
+        assertThat(saved.get().getDescricao()).isEqualTo("Água Mineral");
+        assertThat(saved.get().getGrupoProduto().getId()).isEqualTo(grupoProduto.getId());
+
+        // Consulta via GET para confirmar recuperação do recurso criado
+        mockMvc.perform(get("/api/produto/{id}", createdId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idProduto").value(createdId))
+                .andExpect(jsonPath("$.descricao").value("Água Mineral"));
+    }
+
+
+    @Test
     @DisplayName("POST /api/produto deve retornar 404 quando grupo informado não existir")
-    void shouldReturn404WhenCreatingWithUnknownGrupoProduto() throws Exception {
+    void deveRetornar404AoCriarProdutoComGrupoInexistente() throws Exception {
         var payload = objectMapper.createObjectNode();
         payload.put("descricao", "Monitor 4K");
         payload.put("codigoBarra", "5554443332221");
@@ -190,7 +216,7 @@ class ProdutoResourceIntegrationTest {
 
     @Test
     @DisplayName("PUT /api/produto/{id} deve atualizar o produto existente")
-    void shouldUpdateProduct() throws Exception {
+    void deveAtualizarProduto() throws Exception {
         var payload = objectMapper.createObjectNode();
         payload.put("idProduto", produtoCaboHdmi.getIdProduto());
         payload.put("descricao", "Cabo HDMI 4K");
@@ -216,7 +242,7 @@ class ProdutoResourceIntegrationTest {
 
     @Test
     @DisplayName("PUT /api/produto/{id} deve retornar 404 quando produto não existir")
-    void shouldReturn404WhenUpdatingUnknownProduct() throws Exception {
+    void deveRetornar404AoAtualizarProdutoInexistente() throws Exception {
         var payload = objectMapper.createObjectNode();
         payload.put("idProduto", 999L);
         payload.put("descricao", "Produto Inexistente");
@@ -236,7 +262,7 @@ class ProdutoResourceIntegrationTest {
 
     @Test
     @DisplayName("DELETE /api/produto/{id} deve remover o produto quando existir")
-    void shouldDeleteProduct() throws Exception {
+    void deveExcluirProduto() throws Exception {
         mockMvc.perform(delete("/api/produto/{id}", produtoNotebook.getIdProduto()))
                 .andExpect(status().isNoContent());
 
@@ -245,63 +271,12 @@ class ProdutoResourceIntegrationTest {
 
     @Test
     @DisplayName("DELETE /api/produto/{id} deve retornar 404 quando produto não for encontrado")
-    void shouldReturn404WhenDeletingUnknownProduct() throws Exception {
+    void deveRetornar404AoExcluirProdutoInexistente() throws Exception {
         mockMvc.perform(delete("/api/produto/{id}", 12345L))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value("Produto não encontrado: id=12345"));
     }
 
-    @Test
-    @DisplayName("POST /api/produto deve criar um produto, persistir no banco e retornar o DTO com os dados esperados")
-    void createProdutoShouldPersistAndReturnDto() throws Exception {
-        ProdutoDTO payload = new ProdutoDTO();
-        payload.setDescricao("Água Mineral");
-        payload.setCodigoBarra("7891000100001");
-        payload.setGrupoProdutoId(grupoProduto.getId());
-        payload.setStatus(Status.ATIVO.getId());
-        payload.setValorUnitario(new BigDecimal("5.25"));
-        payload.setSaldoEstoque(new BigDecimal("10.000"));
-        payload.setValorEstoque(new BigDecimal("52.50"));
 
-        String body = objectMapper.writeValueAsString(payload);
-
-        String response = mockMvc.perform(post("/api/produto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", containsString("/api/produto/")))
-                .andExpect(jsonPath("$.idProduto").isNumber())
-                .andExpect(jsonPath("$.descricao").value("Água Mineral"))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        ProdutoDTO created = objectMapper.readValue(response, ProdutoDTO.class);
-
-        assertThat(produtoRepository.findById(created.getIdProduto())).isPresent();
-
-        mockMvc.perform(get("/api/produto/{id}", created.getIdProduto()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.idProduto").value(created.getIdProduto()))
-                .andExpect(jsonPath("$.descricao").value("Água Mineral"));
-    }
-
-    @Test
-    @DisplayName("GET /api/produto/codigobarra/{codigo} deve retornar 404 quando produto não for encontrado pelo codigo de barra")
-    void getProdutoByCodigoBarraShouldReturnProduto() throws Exception {
-        Produto produto = new Produto();
-        produto.setDescricao("Refrigerante Lata");
-        produto.setCodigoBarra("3216549870123");
-        produto.setSaldoEstoque(new BigDecimal("3.000"));
-        produto.setValorUnitario(new BigDecimal("6.50"));
-        produto.setGrupoProduto(grupoProduto);
-        produto.setStatus(Status.ATIVO);
-        produtoRepository.save(produto);
-
-        mockMvc.perform(get("/api/produto/codigobarra/{codigo}", produto.getCodigoBarra()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.codigoBarra").value(produto.getCodigoBarra()))
-                .andExpect(jsonPath("$.descricao").value("Refrigerante Lata"));
-    }
 }
