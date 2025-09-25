@@ -85,6 +85,7 @@ class GrupoProdutoResourceIntegrationTest {
     @Test
     @DisplayName("GET /api/grupoproduto/{id} deve retornar 404 quando grupo não existir")
     void deveRetornar404AoBuscarGrupoInexistente() throws Exception {
+        //teste de integração
         Integer idInexistente = 99999;
         mockMvc.perform(get("/api/grupoproduto/{id}", idInexistente)
                         .accept(MediaType.APPLICATION_JSON))
