@@ -22,6 +22,12 @@ public class DBService {
 
     public void initDB(){
 
+        // Com o Liquibase o banco nao e mais apagado a cada inicializacao.
+        // Se ja existem grupos cadastrados, evitamos inserir os exemplos novamente.
+        if (grupoProdutoRepo.count() > 0) {
+            return;
+        }
+
         GrupoProduto grupo01 = new GrupoProduto(null,"Limpeza", Status.ATIVO);
         GrupoProduto grupo02 = new GrupoProduto(null,"Alimenticio",Status.ATIVO);
 
