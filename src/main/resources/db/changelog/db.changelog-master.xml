@@ -6,5 +6,6 @@
         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd">
 
     <include file="changes/001-criar-estrutura-inicial.xml" relativeToChangelogFile="true"/>
+    <include file="changes/002-criar-usuario.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

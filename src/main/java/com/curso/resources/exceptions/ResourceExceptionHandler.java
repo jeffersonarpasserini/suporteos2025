@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -42,6 +43,21 @@ public class ResourceExceptionHandler {
                 ex.getMessage(),request.getRequestURI());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<StandardError> handleAuthenticationException(
+            AuthenticationException ex, HttpServletRequest request) {
+
+        StandardError error = new StandardError(
+                System.currentTimeMillis(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized",
+                "Usuario ou senha invalidos",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
 }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd">
+
+    <changeSet id="004-criar-sequencia-usuario" author="curso">
+        <createSequence sequenceName="seq_usuario" startValue="1" incrementBy="1"/>
+
+        <rollback>
+            <dropSequence sequenceName="seq_usuario"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="005-criar-tabela-usuario" author="curso">
+        <createTable tableName="usuario">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_usuario" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="senha" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="papel" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ativo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="usuario"
+                columnNames="username"
+                constraintName="uk_usuario_username"/>
+
+        <rollback>
+            <dropTable tableName="usuario"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

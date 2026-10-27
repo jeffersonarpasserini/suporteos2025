@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -49,6 +50,7 @@ public class GrupoProdutoResource {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GrupoProdutoDTO> create(@RequestBody @Validated(GrupoProdutoDTO.Create.class) GrupoProdutoDTO dto) {
         GrupoProdutoDTO created = service.create(dto);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -59,6 +61,7 @@ public class GrupoProdutoResource {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GrupoProdutoDTO> update(
             @PathVariable Integer id,
             @RequestBody @Validated(GrupoProdutoDTO.Update.class) GrupoProdutoDTO dto) {
@@ -67,6 +70,7 @@ public class GrupoProdutoResource {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
